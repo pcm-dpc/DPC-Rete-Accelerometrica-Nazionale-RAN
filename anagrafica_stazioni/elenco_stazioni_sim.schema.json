@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/rangitdpc/pcm-dpc/refs/heads/master/anagrafica_stazioni/elenco_stazioni_sim.schema.json",
+  "title": "RAN - Elenco stazioni (formato stabilito per esportazione verso SIM-MASE)",
+  "description": "FeatureCollection GeoJSON (RFC 7946): una Feature per stazione RAN, geometria Point [lon, lat] WGS84. Le properties contengono l'anagrafica stazione e l'array annidato sensori -> canali.",
+  "type": "object",
+  "required": ["type", "features"],
+  "additionalProperties": false,
+  "properties": {
+    "type": { "const": "FeatureCollection" },
+    "data_elaborazione": {
+      "type": "string",
+      "description": "Timestamp di generazione 'YYYY-MM-DD HH:MM:SS' (foreign member, RFC 7946 6.1)."
+    },
+    "features": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/feature" }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "required": ["type", "geometry", "properties"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Feature" },
+        "geometry": { "$ref": "#/$defs/pointOrNull" },
+        "properties": { "$ref": "#/$defs/stationProperties" }
+      }
+    },
+    "pointOrNull": {
+      "description": "Posizione geografica stazione.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "coordinates"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "Point" },
+            "coordinates": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 3,
+              "items": { "type": "number" },
+              "description": "[longitudine, latitudine(, quota)] WGS84."
+            }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "stato": {
+      "type": "string",
+      "enum": ["attiva", "dismessa"]
+    },
+    "stationProperties": {
+      "type": "object",
+      "required": ["id", "nome", "rete", "comune", "provincia", "regione", "altezza", "stato", "data_attivazione", "data_dismissione", "mase", "sensori"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "ID stazione (STATION_CODE)." },
+        "nome": { "type": "string", "description": "Nome stazione." },
+        "rete": { "type": "string", "description": "Codice rete (NET_CODE)." },
+        "comune": { "type": "string" },
+        "provincia": { "type": "string" },
+        "regione": { "type": "string" },
+        "altezza": { "type": "number", "description": "Altezza (altitudine strumento, km)." },
+        "stato": { "$ref": "#/$defs/stato" },
+        "data_attivazione": { "type": "string", "description": "Data attivazione." },
+        "data_dismissione": { "type": "string", "description": "Data dismissione, '0000-00-00' se attiva." },
+        "mase": { "type": "integer", "enum": [0, 1], "description": "Indicatore stazione finanziata in ambito PNRR-MASE." },
+        "sensori": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/sensore" }
+        }
+      }
+    },
+    "sensore": {
+      "type": "object",
+      "required": ["id", "nome", "tipo", "parametro", "unita_misura", "quota", "stato", "data_attivazione", "data_dismissione", "canali"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": ["string", "null"], "description": "Seriale sensore, null se non disponibile." },
+        "nome": { "type": "string", "description": "Nome sensore." },
+        "tipo": { "type": "string", "description": "Tipo sensore (accelerometro)." },
+        "parametro": { "type": "string", "description": "Parametro misurato (accelerazione)." },
+        "unita_misura": { "type": "string", "description": "Unita di misura (nm/s**2)." },
+        "quota": { "type": ["number", "null"], "description": "Quota sensore (profondita' in km del pozzo in cui e' alloggiato il sensore); null se non presente." },
+        "stato": { "$ref": "#/$defs/stato" },
+        "data_attivazione": { "type": "string", "description": "Data attivazione." },
+        "data_dismissione": { "type": ["string", "null"], "description": "Data dismissione; null se attivo." },
+        "canali": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/canale" }
+        }
+      }
+    },
+    "canale": {
+      "type": "object",
+      "required": ["id", "parametro", "unita_misura", "stato", "data_attivazione", "data_dismissione"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "ID canale (CHANNEL_CODE)." },
+        "parametro": { "type": "string", "description": "Parametro misurato (accelerazione)." },
+        "unita_misura": { "type": "string", "description": "Unita di misura del canale." },
+        "stato": { "$ref": "#/$defs/stato" },
+        "data_attivazione": { "type": "string", "description": "Data attivazione." },
+        "data_dismissione": { "type": ["string", "null"], "description": "Data dismissione; null se attivo." }
+      }
+    }
+  }
+}

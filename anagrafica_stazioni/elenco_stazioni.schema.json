@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.github.com/rangitdpc/pcm-dpc/refs/heads/master/anagrafica_stazioni/elenco_stazioni.schema.json",
+  "title": "RAN - Elenco stazioni",
+  "description": "FeatureCollection GeoJSON (RFC 7946): una Feature per stazione RAN, geometria Point [lon, lat] WGS84.",
+  "type": "object",
+  "required": ["type", "features"],
+  "additionalProperties": false,
+  "properties": {
+    "type": { "const": "FeatureCollection" },
+    "data_elaborazione": {
+      "type": "string",
+      "description": "Timestamp di generazione 'YYYY-MM-DD HH:MM:SS' (foreign member, RFC 7946 6.1)."
+    },
+    "features": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/feature" }
+    }
+  },
+  "$defs": {
+    "feature": {
+      "type": "object",
+      "required": ["type", "geometry", "properties"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "const": "Feature" },
+        "geometry": { "$ref": "#/$defs/pointOrNull" },
+        "properties": { "$ref": "#/$defs/stationProperties" }
+      }
+    },
+    "pointOrNull": {
+      "description": "Posizione geografica stazione.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["type", "coordinates"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "Point" },
+            "coordinates": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 3,
+              "items": { "type": "number" },
+              "description": "[longitudine, latitudine(, quota)] WGS84."
+            }
+          }
+        },
+        { "type": "null" }
+      ]
+    },
+    "stationProperties": {
+      "type": "object",
+      "required": ["netcode", "sta", "nome", "comune", "provincia", "regione", "alt", "installazione", "disinstallazione", "stato", "basamento", "box", "recinzione"],
+      "additionalProperties": false,
+      "properties": {
+        "netcode": { "type": "string", "description": "Codice rete SEED (NET CODE)." },
+        "sta": { "type": "string", "description": "ID stazione (STATION CODE)." },
+        "nome": { "type": "string", "description": "Nome stazione." },
+        "comune": { "type": "string" },
+        "provincia": { "type": "string" },
+        "regione": { "type": "string" },
+        "alt": { "type": "number", "description": "Altezza (altitudine strumento)." },
+        "installazione": { "type": "string", "description": "Data attivazione." },
+        "disinstallazione": { "type": "string", "description": "Data dismissione, '---' se attiva." },
+        "stato": { "type": "string", "description": "ATTIVA / NON ATTIVA." },
+        "basamento": { "type": ["string", "null"] },
+        "box": { "type": ["string", "null"] },
+        "recinzione": { "type": ["string", "null"] }
+      }
+    }
+  }
+}
